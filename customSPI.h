@@ -23,7 +23,7 @@ void transmitSPI(char numBytes, long *pDataSpi)	//4 is the max bytes this functi
 	PORTB &= ~(1 << pinSS);	//setting SLAVE SELECT low to initiate transfer
 	
 	
-	for(int i = 3; i >= 0; i--)
+	for(int i = numBytes - 1; i >= 0; i--)
 	{
 		SPDR = *pDataSpi >> i*8;
 		while(!(SPSR & (1 << SPIF)));	//checking if SPI interrupt flag isn't set/serial transfer not completed
@@ -31,31 +31,12 @@ void transmitSPI(char numBytes, long *pDataSpi)	//4 is the max bytes this functi
 
 	PORTB |= (1 << pinSS); 	//setting SLAVE SELECT high to end transfer
 	
-	/*
-	//============================= TX USART ================================
-	PORTB &= ~(1 << pinSS);	//setting SLAVE SELECT low to initiate transfer
-	
-	spi_data_tx = 0xF2;
-	SPDR = spi_data_tx;	//putting data into the SPI Data register
-	
-	
-	asm volatile("nop");
-	while(!(SPSR & (1 << SPIF)));	//checking if SPI interrupt flag isn't set/serial transfer not completed
-	
-	spi_data_tx = 0b00011001;
-	SPDR = spi_data_tx;	//putting data into the SPI Data register
-	
-	while(!(SPSR & (1 << SPIF)));	//checking if SPI interrupt flag isn't set/serial transfer not completed
-
-	PORTB |= (1 << pinSS); 	//setting SLAVE SELECT high to end transfer
-	*/
 }
 
-void setupSPI()
+void setupTxSPI()
 {
 	cli();
 	//set SS pin as output
-	DDRB |= 1 << pinSS;
 	DDR_SPI |= (1 << pinSS) | (1 << pinSCK) | (1 << pinMOSI);
 	
 	//enable SPI, set as master
