@@ -12,6 +12,7 @@
 #define pinSS PB2	//pin 10
 
 
+
 void transmitMasterSPI(char numBytes, long *pDataSpi)	//4 is the max bytes this function is intended for
 {
 	
@@ -31,11 +32,24 @@ void transmitMasterSPI(char numBytes, long *pDataSpi)	//4 is the max bytes this 
 
 void transmitSlaveSPI(char numBytes, long *pDataSpi)
 {
+	/*
 	for(int i = numBytes - 1; i >= 0; i--)
 	{
-		SPDR = *pDataSpi >> i*8;
+		SPDR = *pDataSpi >> i*4;
 		while(!(SPSR & (1 << SPIF)));	//checking if SPI interrupt flag isn't set/serial transfer not completed
 	}
+	*/
+	SPDR = 0x12;
+	//while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
+	
+	SPDR = 0xFF;
+	//while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
+	
+	SPDR = 0xDC;
+	while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
+	
+	SPDR = 0xAB;
+	while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
 }
 
 void tx_and_rx(char numBytes, long *pDataSpi)	//if the master wants to transmit and then receive
@@ -50,8 +64,6 @@ void tx_and_rx(char numBytes, long *pDataSpi)	//if the master wants to transmit 
 	}
 	
 	_delay_ms(10);
-	
-	PORTB |= (1 << pinSS); 	//setting SLAVE SELECT high to end transfer
 }
 
 void setupMasterSPI()
@@ -77,7 +89,6 @@ void setupSlaveSPI()
 	
 	// enable SPI, set as slave
 	SPCR |= (1 << SPE) | (1 << SPIE);
-	sei();	//enable global interrupts
 	
 	// enable SPI transmitting slave->master
 	DDR_SPI |= 1 << pinMISO;
@@ -88,19 +99,7 @@ void setupSlaveSPI()
 void receiveSPI(char numBytes, long *pRxData)	//returns pointer to data
 {
 	if(!( DDR_SPI & (1 << pinSS) ) ){	//slave waits for SS to be low (waiting for master to transfer)
-		//store each incoming byte
-		*pRxData = SPDR;
-		while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
-		
-		*pRxData = SPDR;
-		while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
-		
-		*pRxData = SPDR;
-		while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
-		
-		*pRxData = SPDR;
-		while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
-		
+		//while(!(SPSR & (1 << SPIF)));	//checking if SPI interrupt flag isn't set/serial transfer not completed
 	}
 }
 
