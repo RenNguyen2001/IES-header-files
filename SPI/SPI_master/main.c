@@ -15,14 +15,14 @@
 
 int main(void)
 {
-	unsigned long spiTxData = 0xFDADCCDD;
-	setupMasterSPI(2);
+	unsigned long spiTxData = 0xFDADCCDE;
+	setupMasterSPI(3);
 	
     /* Replace with your application code */
     while (1) 
     {
 		//transmitMasterSPI(4, &spiTxData);
-		tx_and_rx(4, &spiTxData);
+		transmitMasterSPI(4, &spiTxData);
     }
 }
 
