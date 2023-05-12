@@ -61,15 +61,19 @@ ISR(SPI_STC_vect){	//serial complete interrupt
 		switch(counter)
 		{
 			case 0:	spi_data_rx1 = (temp << 24);
+			counter++;
 			break;
 			
 			case 1:	spi_data_rx1 |= (temp << 16);
+			counter++;
 			break;
 			
 			case 2:	spi_data_rx1 |= (temp << 8);
+			counter++;
 			break;
 			
 			case 3: spi_data_rx1 |= (temp);
+			counter = 0;
 			break;
 			
 		}
@@ -86,7 +90,7 @@ ISR(SPI_STC_vect){	//serial complete interrupt
 		//txByteUSART(SPDR);
 		//txLongUSART(spi_data_rx1);	
 		txByteUSART('n');
-		counter++;
+		
 
 		while(!(SPSR & (1 << SPIF)));	//checking if SPI interrupt flag isn't set/serial transfer not completed
 		
@@ -97,9 +101,9 @@ ISR(SPI_STC_vect){	//serial complete interrupt
 int main(void)
 {
 	//char bytesReceived;
-	t2_ctcModeSetupPin3(1, 39e5);
+	t2_ctcModeSetupPin3(1, 1e6);
 	setupSlaveSPI();
-	initUSART(4e6);	//around baud of 85000 is where the UART starts giving incorrect readings
+	initUSART(1e6);	//around baud of 85000 is where the UART starts giving incorrect readings
 	
 	
 	
@@ -110,12 +114,8 @@ int main(void)
 		//txStringUSART("; rx_slave: ");
 		
 		//txStringUSART("\n");
-		if(counter >= 3)
-		{
-			counter = 0;
-			//txLongUSART(0xFFCCDDEE);	txByteUSART('n');
-		}
 		
     }
 }
+
 
