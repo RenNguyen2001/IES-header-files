@@ -47,7 +47,8 @@ ISR(SPI_STC_vect){	//serial complete interrupt
 			case 3: spi_data_rx1 |= (temp);
 			counter = 0;	lastState = 0;
 			dutyCycleResult = simpleSPIvalToFloat(spi_data_rx1);
-			OCR2B = (int)OCR2A * dutyCycleResult;					//changing the duty cycle based on the received spi value
+			//OCR2B = (int)OCR2A * dutyCycleResult;					//changing the duty cycle based on the received spi value
+			t0_changeDC(dutyCycleResult);
 			txStringUSART("dutyCycle: ");	txFloatUSART(dutyCycleResult);	txStringUSART("\n");
 			break;
 			
@@ -77,7 +78,8 @@ int main(void)
 	initUSART(9600);
 	
 	setupPCIportB(PINB2);
-	t2_fastPWMsetupPin3(1, 100e3, 0.5);
+	//t2_fastPWMsetupPin3(1, 100e3, 0.5);
+	t0_fastPWMsetupPin5_Pin6(2, 0.5);
 	
     while (1) 
     {

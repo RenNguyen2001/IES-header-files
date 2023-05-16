@@ -126,6 +126,36 @@ void t0_fastPWMsetupPin5(int psVal, float f_req, float dutyCycle)	//t0_fastPWMse
 	*/
 }
 
+void t0_fastPWMsetupPin5_Pin6(int psVal, float dutyCycle)
+{
+	DDRD |= 1<<PIND6;	//setting OC0A to output
+	DDRD |= 1<<PIND5;	//setting OC0B to output
+	
+	TCCR0A |= (1<<WGM01) + (1<<WGM00);	//setting to fastPWM mode - TOP = 0xFF	so can't change the frequency directly, can only change prescalar
+	TCCR0B |= t01PrescalarsSettings[psVal];
+	TCCR0A |= (1<<COM0B1) | (1<<COM0A1) | (1<<COM0A0);	//set comB in non inverting mode, set comA in inverting mode
+	
+	//calculate the OCR0A value required for a certain frequency
+	OCR0A = (int)(255*dutyCycle);
+	OCR0B = OCR0A;
+	
+	//lowest possible frequency for each psVal setting
+	/*
+	1 - 1:		62.5 kHz
+	2 - 8:		7.8 kHz
+	3 - 64:		976 Hz
+	4 - 256:	244 Hz
+	5 - 1024:	61 Hz
+	*/
+}
+
+void t0_changeDC(float dutyCycle)
+{
+	OCR0A = (int)(255*dutyCycle);
+	OCR0B = OCR0A;
+}
+
+
 void t0_phasePWMsetupPin5(int psVal, float f_req, float dutyCycle)
 {
 	DDRD = 1<<5;	//setting OC0A to output
