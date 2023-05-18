@@ -47,6 +47,11 @@ ISR(SPI_STC_vect){	//serial complete interrupt
 			case 3: spi_data_rx1 |= (temp);
 			counter = 0;	lastState = 0;
 			dutyCycleResult = simpleSPIvalToFloat(spi_data_rx1);
+			if(dutyCycleResult > 90 && dutyCycleResult < 100)
+			{
+				DDRD ^= (1<<PIND6);	//toggling the inverted PWM output
+				DDRD ^= (1<<PIND5);	//toggling the non-inverted PWM output
+			}
 			//OCR2B = (int)OCR2A * dutyCycleResult;					//changing the duty cycle based on the received spi value
 			t0_changeDC(dutyCycleResult);
 			txStringUSART("dutyCycle: ");	txFloatUSART(dutyCycleResult);	txStringUSART("\n");
@@ -73,11 +78,12 @@ ISR(PCINT0_vect)
 
 int main(void)
 {
+	
 	//t2_ctcModeSetupPin3(1, 1e6);
 	setupSlaveSPI();
 	initUSART(9600);
 	
-	setupPCIportB(PINB2);
+	setupPCIportB(PINB2);	//falling edge detection of the chip select signal
 	//t2_fastPWMsetupPin3(1, 100e3, 0.5);
 	t0_fastPWMsetupPin5_Pin6(2, 0.5);
 	
