@@ -143,6 +143,7 @@ char btnStatusOld_EN = 1; //Enable Button Status Tracking
 ISR(INT0_vect)
 {
 	char btnStatusNew_EN = bitCheck(PIND, Btn1);
+	unsigned long disableSig = 95.5 * 1e6;
 	
 	if (btnStatusNew_EN != btnStatusOld_EN){
 		
@@ -155,6 +156,7 @@ ISR(INT0_vect)
 			
 			if (!btnStatusNew_EN ){
 				TCCR2A ^= (1 << COM2B1); //toggle PWM Output
+				transmitMasterSPI(4, &disableSig);
 			}
 		}
 	}
