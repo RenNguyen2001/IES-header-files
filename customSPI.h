@@ -1,4 +1,3 @@
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "util/delay.h"
@@ -19,7 +18,7 @@ const char oscFreq[] = {
 };
 
 
-void transmitMasterSPI(char numBytes, long *pDataSpi)	//4 is the max bytes this function is intended for
+void transmitMasterSPI(char numBytes, unsigned long *pDataSpi)	//4 is the max bytes this function is intended for
 {
 	
 	//long *pDataSpi = 0xFFABCCDD;
@@ -28,9 +27,11 @@ void transmitMasterSPI(char numBytes, long *pDataSpi)	//4 is the max bytes this 
 	
 	for(int i = numBytes - 1; i >= 0; i--)
 	{
+		_delay_ms(1);
 		SPDR = *pDataSpi >> i*8;
 		while(!(SPSR & (1 << SPIF)));	//checking if SPI interrupt flag isn't set/serial transfer not completed
 	}
+	_delay_ms(1);
 
 	PORTB |= (1 << pinSS); 	//setting SLAVE SELECT high to end transfer
 	
@@ -45,23 +46,7 @@ void transmitSlaveSPI(char numBytes, long *pDataSpi)
 	}
 }
 
-void tx_and_rx(char numBytes, unsigned long *pDataSpi)	//if the master wants to transmit and then receive
-{
-	PORTB &= ~(1 << pinSS);	//setting SLAVE SELECT low to initiate transfer
-	
-	
-	for(int i = numBytes - 1; i >= 0; i--)
-	{
-		SPDR = *pDataSpi >> i*8;
-		while(!(SPSR & (1 << SPIF)));	//checking if SPI interrupt flag isn't set/serial transfer not completed
-	}
-	
-	//_delay_ms(10);
-	
-	PORTB |= (1 << pinSS); 	//setting SLAVE SELECT high to end transfer
-	//_delay_ms(1);
-	
-}
+
 
 void setupMasterSPI(unsigned char oscSetting)
 {
@@ -95,22 +80,4 @@ void setupSlaveSPI()
 	sei();
 }
 
-void receiveSPI(char numBytes, long *pRxData)	//returns pointer to data
-{
-	if(!( DDR_SPI & (1 << pinSS) ) ){	//slave waits for SS to be low (waiting for master to transfer)
-		//store each incoming byte
-		*pRxData = SPDR;
-		while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
-		
-		*pRxData = SPDR;
-		while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
-		
-		*pRxData = SPDR;
-		while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
-		
-		*pRxData = SPDR;
-		while (!(SPSR & (1 << SPIF)));	//checking for SPI interrupt flag in SPI status register/completion of serial transfer
-		
-	}
-}
 
